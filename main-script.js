@@ -1,1 +1,1 @@
-introGame();
+beforeGame();
