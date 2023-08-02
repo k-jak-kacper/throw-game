@@ -1,6 +1,8 @@
 const gameBoard = document.querySelector('#game-board');
 const ctx = gameBoard.getContext('2d');
 const startButton = document.querySelector('#start-button');
+const scoreDiv = document.querySelector('#score-div');
+const highScoreDiv = document.querySelector('#high-score-div');
 
 const gameWidth = gameBoard.width;
 const gameHeight = gameBoard.height;
@@ -11,11 +13,14 @@ const textColor = 'black';
 const clockTickSound = new Audio ("sounds/clock-tick-sound.mp3");
 const startGameSound = new Audio ("sounds/game-start-sound.mp3");
 const gameTickSound = new Audio ("./sounds/tick-sound.wav");
+const gameOverSound = new Audio ("./sounds/game-over-sound.mp3");
 
 let running = false;
 let isRook = false;
 let rookX = 350, rookY = 400;
 let placeOfRook = 3;
+
+let highScore = 0;
 
 let currentRow;
 
@@ -69,12 +74,16 @@ function beforeGame () {
 
 function startGame () {
   if (!running) {
-    isRook = false;
+    scoreDiv.textContent = "Score: 0";
+
     running = true;
     startButton.textContent = "Reset";
     clearBoard();
 
     introGame().then(() => {
+      placeOfRook = 3;
+      rookX = 350; 
+      rookY = 400;
       nextMove();
     });
   }
@@ -270,40 +279,48 @@ function moveRook (event) {
 }
 
 function nextMove () {
-  ctx.fillStyle = backgroundColor;
-  ctx.fillRect(0, 0, gameWidth, gameHeight - 100);
-
-
   if (moveCounter % 120 == 0) {
     createMap();
     rookSpeed -= 100;
   }
-
-  for (i = 0; i < 4; i++) {
-    let birdX = 150;
-    let birdY = 300 - i * 100;
-
-
-    currentRow = map[moveCounter + i];
-
-    currentRow.forEach((isBird) => {
-      if (isBird == 1) {
-        drawBird(birdX, birdY);
-      }
-      birdX += 100;
-    });
-  }
-
-  moveCounter++;
-  gameTickSound.play();
-
-  if (checkColission()) {
-    console.log(1);
-  }
   else {
+    if (checkColission()) {
+      running = false;
+      isRook = false;
+    }
+  }
+
+  if (running) {
+    for (i = 0; i < 4; i++) {
+      let birdX = 150;
+      let birdY = 300 - i * 100;
+
+      ctx.fillStyle = backgroundColor;
+      ctx.fillRect(0, 0, gameWidth, gameHeight - 100);
+
+
+      currentRow = map[moveCounter + i];
+
+      currentRow.forEach((isBird) => {
+        if (isBird == 1) {
+          drawBird(birdX, birdY);
+        }
+        birdX += 100;
+      });
+    }
+
+    moveCounter++;
+    gameTickSound.play();
+    scoreDiv.textContent = `Score: ${moveCounter}`;
+
     setTimeout(() => {
       nextMove();
     }, rookSpeed);
+  }
+  else {
+    setTimeout(() => {
+      gameOver();
+    }, 500);
   }
 }
 
@@ -313,4 +330,27 @@ function checkColission () {
   if (currentRow[placeOfRook - 1] == 1) {
     return true;
   }
+}
+
+function gameOver () {
+  ctx.fillStyle = backgroundColor;
+  ctx.fillRect(0, 0, gameWidth, gameHeight - 100);
+
+  highScore = moveCounter > highScore ? moveCounter : highScore;
+
+  highScoreDiv.textContent = `Highest score: ${highScore}`;
+
+  moveCounter = 0;
+  rookSpeed = 800;
+  ctx.textAlign = 'center';
+  ctx.font = '120px Lumanosimo, cursive';
+  ctx.fillStyle = textColor;
+  ctx.lineWidth = 8;
+
+  ctx.strokeText("Game", gameWidth / 2, gameHeight - 300);
+  ctx.strokeText("Over", gameWidth / 2, gameHeight - 150);
+
+  startButton.textContent = 'Play Again';
+
+  gameOverSound.play();
 }

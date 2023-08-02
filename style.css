@@ -18,7 +18,7 @@ body {
 #start-button {
   font-family: Roboto, Arial;
   font-weight: 500;
-  font-size: 16px;
+  font-size: 20px;
   padding: 8px 16px;
 
   color: white;
@@ -37,4 +37,28 @@ body {
 #start-button:active {
   color: black;
   background-color: white;
+}
+
+#info-div {
+  display: flex;
+  flex-direction: row;
+  justify-content:space-between;
+  align-items: center;
+  width: 700px;
+
+  font-family: Roboto, Arial;
+  font-weight: 500;
+  font-size: 20px;
+}
+
+#info-div div {
+  width: 30%;
+}
+
+#high-score-div {
+  text-align: right;
+}
+
+#score-div {
+  text-align: left;
 }
