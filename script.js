@@ -22,7 +22,7 @@ let placeOfRook = 3;
 
 let isCollission = false;
 
-let highScore = 0;
+let highScore = JSON.parse(localStorage.getItem('highScore')) || 0;
 
 let currentRow;
 
@@ -45,6 +45,8 @@ function beforeGame () {
 
   ctx.strokeText("Throw", gameWidth / 2, gameHeight - 300);
   ctx.strokeText("Game", gameWidth / 2, gameHeight - 150);
+
+  highScoreDiv.textContent = `Highest score: ${highScore}`;
 
   img.src = "./img/rook-1.png";
   img.onload = () => {
@@ -389,9 +391,11 @@ function gameOver () {
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, gameWidth, gameHeight - 100);
 
-    highScore = moveCounter > highScore ? moveCounter : highScore;
+    highScore = moveCounter - 1 > highScore ? moveCounter - 1 : highScore;
   
     highScoreDiv.textContent = `Highest score: ${highScore}`;
+
+    localStorage.setItem('highScore', JSON.stringify(highScore));
   
     moveCounter = 0;
     rookSpeed = 800;
