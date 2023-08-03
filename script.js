@@ -20,6 +20,8 @@ let isRook = false;
 let rookX = 350, rookY = 400;
 let placeOfRook = 3;
 
+let isCollission = false;
+
 let highScore = 0;
 
 let currentRow;
@@ -77,13 +79,11 @@ function startGame () {
     scoreDiv.textContent = "Score: 0";
 
     running = true;
+    isCollission = false;
     startButton.textContent = "Reset";
     clearBoard();
 
     introGame().then(() => {
-      placeOfRook = 3;
-      rookX = 350; 
-      rookY = 400;
       nextMove();
     });
   }
@@ -182,6 +182,8 @@ async function introGame () {
                   nextTick();
                 else {
                   clearBoard();
+                  placeOfRook = 3;
+                  rookX = 350; 
                   drawRook(rookX, rookY);
                   isRook = true;
                   resolve();
@@ -195,6 +197,52 @@ async function introGame () {
   });
 }
 
+async function collisionAnimation () {
+  moveCounter++;
+  for (i = 0; i < 4; i++) {
+    let birdX = 150;
+    let birdY = 300 - i * 100;
+
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, gameWidth, gameHeight - 100);
+
+
+    currentRow = map[moveCounter + i];
+
+    currentRow.forEach((isBird) => {
+      if (isBird == 1) {
+        drawBird(birdX, birdY);
+      }
+      birdX += 100;
+    });
+  }
+
+  return new Promise (resolve => {
+    let image = new Image();
+    image.onload = () => {
+      ctx.drawImage(image, rookX, rookY);
+    }
+    gameTickSound.play();
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(rookX, rookY, 100, 100);
+    image.src = "./img/collision-1.png"
+
+    setTimeout(() => {
+      gameTickSound.play();
+      ctx.fillStyle = backgroundColor;
+      ctx.fillRect(rookX, rookY, 100, 100);
+      image.src = "./img/collision-2.png"
+      setTimeout(() => {
+        gameTickSound.play();
+        ctx.fillStyle = backgroundColor;
+        ctx.fillRect(rookX, rookY, 100, 100);
+        image.src = "./img/collision-3.png"
+        resolve();
+      }, 200);
+    }, 100);
+  }, rookSpeed); 
+}
+
 function clearBoard () {
   ctx.fillStyle = backgroundColor;
   ctx.fillRect(0, 0, gameWidth, gameHeight);
@@ -202,7 +250,10 @@ function clearBoard () {
 
 function drawRook (x, y) {
   let image = new Image();
-  image.src = "./img/rook-2.png";
+  if (isCollission)
+    collisionAnimation();
+  else
+    image.src = "./img/rook-2.png";
   image.onload = () => {
     ctx.drawImage(image, x, y);
   }
@@ -310,8 +361,9 @@ function nextMove () {
     }
 
     moveCounter++;
-    gameTickSound.play();
     scoreDiv.textContent = `Score: ${moveCounter}`;
+    gameTickSound.play();
+    
 
     setTimeout(() => {
       nextMove();
@@ -333,24 +385,26 @@ function checkColission () {
 }
 
 function gameOver () {
-  ctx.fillStyle = backgroundColor;
-  ctx.fillRect(0, 0, gameWidth, gameHeight - 100);
+  collisionAnimation().then(() => {
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, gameWidth, gameHeight - 100);
 
-  highScore = moveCounter > highScore ? moveCounter : highScore;
-
-  highScoreDiv.textContent = `Highest score: ${highScore}`;
-
-  moveCounter = 0;
-  rookSpeed = 800;
-  ctx.textAlign = 'center';
-  ctx.font = '120px Lumanosimo, cursive';
-  ctx.fillStyle = textColor;
-  ctx.lineWidth = 8;
-
-  ctx.strokeText("Game", gameWidth / 2, gameHeight - 300);
-  ctx.strokeText("Over", gameWidth / 2, gameHeight - 150);
-
-  startButton.textContent = 'Play Again';
-
-  gameOverSound.play();
+    highScore = moveCounter > highScore ? moveCounter : highScore;
+  
+    highScoreDiv.textContent = `Highest score: ${highScore}`;
+  
+    moveCounter = 0;
+    rookSpeed = 800;
+    ctx.textAlign = 'center';
+    ctx.font = '120px Lumanosimo, cursive';
+    ctx.fillStyle = textColor;
+    ctx.lineWidth = 8;
+  
+    ctx.strokeText("Game", gameWidth / 2, gameHeight - 300);
+    ctx.strokeText("Over", gameWidth / 2, gameHeight - 150);
+  
+    startButton.textContent = 'Play Again';
+  
+    gameOverSound.play();
+  })
 }
