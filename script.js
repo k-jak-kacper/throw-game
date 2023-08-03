@@ -14,6 +14,7 @@ const clockTickSound = new Audio ("sounds/clock-tick-sound.mp3");
 const startGameSound = new Audio ("sounds/game-start-sound.mp3");
 const gameTickSound = new Audio ("./sounds/tick-sound.wav");
 const gameOverSound = new Audio ("./sounds/game-over-sound.mp3");
+const doubleGameTickSound = new Audio ("./sounds/double-tick-sound.wav");
 
 let running = false;
 let isRook = false;
@@ -277,7 +278,7 @@ function createMap () {
   row = [0, 0, 0, 0, 0];
   map.push(row);
 
-  for (i = 1; i < 120; i++) {
+  for (i = 1; i < 33; i++) {
     let numberOfBirds = Math.floor(Math.random() * 4) + 1;
     emptyWay = Math.floor(Math.random() * 3) - 1;
 
@@ -332,9 +333,10 @@ function moveRook (event) {
 }
 
 function nextMove () {
-  if (moveCounter % 120 == 0) {
+  if (moveCounter % 30 == 0) {
     createMap();
-    rookSpeed -= 100;
+    rookSpeed = rookSpeed * 0.9;
+    rookSpeed.toFixed(1);
   }
   else {
     if (checkColission()) {
@@ -364,7 +366,11 @@ function nextMove () {
 
     moveCounter++;
     scoreDiv.textContent = `Score: ${moveCounter}`;
-    gameTickSound.play();
+    if (moveCounter % 30 == 0) {
+      doubleGameTickSound.play(0);
+    }
+    else
+      gameTickSound.play();
     
 
     setTimeout(() => {
